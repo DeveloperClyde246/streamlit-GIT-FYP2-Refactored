@@ -235,10 +235,11 @@ def predict_personality(features,scaler,le):
     features_rnn = features.reshape(features.shape[0], 1, features.shape[1])
 
     # Load the trained models
-    rnn_model = tf.keras.models.load_model('personality_model/personality_rnn_model.h5') #############change path################
-    xgb_model = joblib.load('personality_model/personality_xgboost_model.joblib') #############change path################
-    rf_model = joblib.load('personality_model/personality_rf_model.joblib') #############change path################
-    svm_model = joblib.load('personality_model/personality_svm_model.joblib') #############change path################
+    rnn_model = tf.keras.models.load_model(r"C:\Users\KEYU\Documents\GitHub\GIT-FYP2-Refactored\Prototype\models\personality_model\personality_rnn_model.h5") #############change path################
+    xgb_model = joblib.load(r"C:\Users\KEYU\Documents\GitHub\GIT-FYP2-Refactored\Prototype\models\personality_model\personality_xgboost_model.joblib") #############change path################
+    rf_model = joblib.load(r"C:\Users\KEYU\Documents\GitHub\GIT-FYP2-Refactored\Prototype\models\personality_model\personality_rf_model.joblib") #############change path################
+    svm_model = joblib.load(r"C:\Users\KEYU\Documents\GitHub\GIT-FYP2-Refactored\Prototype\models\personality_model\personality_svm_model.joblib") #############change path################
+    #after changing path restart streamlit to apply changes
  
     # Predict personality traits using the models
     rnn_prediction = rnn_model.predict(features_rnn)

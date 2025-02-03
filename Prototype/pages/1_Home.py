@@ -86,7 +86,7 @@ with col2:
         # Convert video to audio
         audio_file = convert_video_to_audio(tfile.name)
         #st.success("Video has been processed and audio extracted!")
-
+        st.subheader("Extracted Audio Details: ")
         if audio_file:
             # st.success("Audio extracted successfully!")
 
@@ -103,7 +103,6 @@ with col2:
                 speech_text = translate_to_indonesian(speech_text)
                 st.write("**Translated Text:**", speech_text)
 
-        st.subheader("Extracted Audio Features: ")
         st.write(features)
         st.write("Shape of the features:", features.shape)
 

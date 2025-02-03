@@ -70,7 +70,7 @@ with col2:
                 # Load BERT model and predict sentiment
                 bert_model_name = 'bert-base-uncased'
                 num_classes = 2
-                model_path = "C:/Users/KEYU/Documents/GitHub/GIT-FYP2/Prototype/speech_score/bert_classifier.pth"
+                model_path = "C:/Users/KEYU/Documents/GitHub/GIT-FYP2-Refactored/Prototype/models/stress_analysis_model/bert_classifier.pth"
                 loaded_model, tokenizer, device = load_bert_model(bert_model_name, num_classes, model_path)
                 predicted_stress = predict_sentiment(speech_text, loaded_model, tokenizer, device)
 

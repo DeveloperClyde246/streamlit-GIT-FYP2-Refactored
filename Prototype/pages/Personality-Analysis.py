@@ -57,8 +57,8 @@ with col2:
                 features = preprocess_audio(audiofile)
 
                 # Load the label encoder and feature scaler
-                personality_le = joblib.load('personality_model/personality_label_encoder.joblib') #############change path################
-                personality_scaler = joblib.load('personality_model/personality_feature_scaler.joblib') #############change path################ 
+                personality_le = joblib.load(r"C:\Users\KEYU\Documents\GitHub\GIT-FYP2-Refactored\Prototype\models\personality_model\personality_label_encoder.joblib") #############change path################
+                personality_scaler = joblib.load(r"C:\Users\KEYU\Documents\GitHub\GIT-FYP2-Refactored\Prototype\models\personality_model\personality_feature_scaler.joblib") #############change path################ 
 
                 # Predict personality traits
                 personality_results = predict_personality(features, personality_scaler, personality_le)

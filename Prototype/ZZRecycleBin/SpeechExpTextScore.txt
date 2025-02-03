@@ -1,0 +1,17 @@
+This part is to determine the presence of stress based on the text. 
+
+Before running the deployment, make sure the directory in each file is correct.
+1. In "main-score.py", Line 52: 
+-- Change "C:/Users/Admin/OneDrive/Desktop/speech-score/bert_classifier.pth" to your directory. 
+
+2. In "function-class.py", Line 64:
+-- Change "C:/Users/Admin/OneDrive/Desktop/speech-score/stopwords-id.json" to your directory.
+
+3. In "function-class.py", Line 72:
+-- Change "C:/Users/Admin/OneDrive/Desktop/speech-score/combined_slang_words.txt" to your directory.
+ 
+
+Start deployment: 
+1.  In "main-score.py", Line 7, copy the path and paste to the terminal. Make sure the path is correct with your directory. 
+
+2. Upload the video as input.

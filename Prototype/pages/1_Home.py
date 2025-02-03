@@ -11,8 +11,8 @@ import librosa
 import joblib
 import plotly.express as px
 import matplotlib.pyplot as plt
-from tone_analysis_dashboard.preprocess_function import *
-from speech_score.function_class import convert_video_to_audio, transcribe_audio, preprocess_text, remove_stopwords, convert_slang, translate_to_indonesian, stem_text, load_bert_model, predict_sentiment
+from services.tone_analysis_function.preprocess_function import *
+from services.stress_analysis_function.function_class import convert_video_to_audio, transcribe_audio, preprocess_text, remove_stopwords, convert_slang, translate_to_indonesian, stem_text, load_bert_model, predict_sentiment
 import langcodes
 import tempfile
 

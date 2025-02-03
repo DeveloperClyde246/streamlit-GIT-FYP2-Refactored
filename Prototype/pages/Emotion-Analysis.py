@@ -6,7 +6,7 @@ import joblib
 import plotly.express as px
 import matplotlib.pyplot as plt
 import os
-from tone_analysis_dashboard.preprocess_function import *
+from services.tone_analysis_function.preprocess_function import *
 
 
 st.title("Emotion Analysis")
@@ -51,8 +51,11 @@ with col2:
             features = preprocess_audio(audiofile)# Preprocess audio
 
             # label encoder and feature scaler
-            emotion_le = joblib.load('emotion_model/emotion_label_encoder.joblib')
-            emotion_scaler = joblib.load('emotion_model/emotion_feature_scaler.joblib')
+            emotion_le_path = r"C:\Users\KEYU\Documents\GitHub\GIT-FYP2-Refactored\Prototype\models\emotion_model\emotion_label_encoder.joblib"
+            emotion_le = joblib.load(emotion_le_path)
+
+            emotion_scaler_path = r"C:\Users\KEYU\Documents\GitHub\GIT-FYP2-Refactored\Prototype\models\emotion_model\emotion_feature_scaler.joblib"
+            emotion_scaler = joblib.load(emotion_scaler_path)
             
             #predict emotions
             emotion_results = predict_emotion(features, emotion_scaler, emotion_le)

@@ -7,12 +7,14 @@ import os
 import numpy as np
 import cv2
 import time
-from facial_expression_recognition.Preprocessor import Preprocessor
+from services.facial_expression_recognition_function.Preprocessor import Preprocessor
 
 import tensorflow as tf
 from tensorflow.keras.models import load_model
 
-model = load_model('Model/model3.h5')#load model
+model_path = r"C:\Users\KEYU\Documents\GitHub\GIT-FYP2-Refactored\Prototype\models\facial_expression_model\model3.h5" #since model is not in the reference path or 'page' directory, have to use absolute path, Note: add this in doc, must be setup when deploying
+
+model = load_model(model_path)#load model
 
 st.set_page_config(layout="wide")
 st.title("Facial Expression Analysis")

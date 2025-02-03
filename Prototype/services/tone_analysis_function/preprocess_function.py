@@ -267,10 +267,10 @@ def predict_emotion(features,scaler,le):
     features_rnn = features.reshape(features.shape[0], 1, features.shape[1])
 
     # Load the trained models
-    rnn_model = tf.keras.models.load_model('emotion_model/emotion_rnn_model.h5') #############change path################
-    xgb_model = joblib.load('emotion_model/emotion_xgboost_model.joblib') #############change path################
-    rf_model = joblib.load('emotion_model/emotion_rf_model.joblib') #############change path################
-    svm_model = joblib.load('emotion_model/emotion_svm_model.joblib') #############change path################
+    rnn_model = tf.keras.models.load_model(r"C:\Users\KEYU\Documents\GitHub\GIT-FYP2-Refactored\Prototype\models\emotion_model\emotion_rnn_model.h5") #############change path################
+    xgb_model = joblib.load(r"C:\Users\KEYU\Documents\GitHub\GIT-FYP2-Refactored\Prototype\models\emotion_model\emotion_xgboost_model.joblib") #############change path################
+    rf_model = joblib.load(r"C:\Users\KEYU\Documents\GitHub\GIT-FYP2-Refactored\Prototype\models\emotion_model\emotion_rf_model.joblib") #############change path################
+    svm_model = joblib.load(r"C:\Users\KEYU\Documents\GitHub\GIT-FYP2-Refactored\Prototype\models\emotion_model\emotion_svm_model.joblib") #############change path################
 
     # Predict emotion traits using the models
     rnn_prediction = rnn_model.predict(features_rnn)

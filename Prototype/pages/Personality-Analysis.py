@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 import os
 
 # from preprocess_function import extract_audio, preprocess_audio, predict_personality
-from tone_analysis_dashboard.preprocess_function import *
+from services.tone_analysis_function.preprocess_function import *
 
 # Streamlit app
 st.title("Personality Analysis")

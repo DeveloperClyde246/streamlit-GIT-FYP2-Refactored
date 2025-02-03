@@ -1,7 +1,7 @@
 import streamlit as st
 import os
 # pip install -U openai-whisper
-from speech_score.function_class import convert_video_to_audio, transcribe_audio, preprocess_text, remove_stopwords, convert_slang, translate_to_indonesian, stem_text, load_bert_model, predict_sentiment
+from services.stress_analysis_function.function_class import convert_video_to_audio, transcribe_audio, preprocess_text, remove_stopwords, convert_slang, translate_to_indonesian, stem_text, load_bert_model, predict_sentiment
 import langcodes
 import tempfile
 
@@ -40,7 +40,7 @@ with col2:
 
             # Convert video to audio
             audio_file = convert_video_to_audio(tfile.name)
-            st.success("Video has been processed and audio extracted!")
+            #st.success("Video has been processed and audio extracted!")
 
             if audio_file:
                 # st.success("Audio extracted successfully!")

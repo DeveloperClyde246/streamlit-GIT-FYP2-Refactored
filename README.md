@@ -19,6 +19,6 @@ Models can be found in "models" directory
 4. in "Prototype\pages\2_Facial-Expression-Analysis.py", change model path in line 15 
 5. in "Prototype\pages\Emotion-Analysis.py", change model path in line 53 and line 57
 
-## 1.4 run program
+## 1.4 Run program
 1. In terminal, change directory to Prototype
 2. Use command "run streamlit Upload-File.py"

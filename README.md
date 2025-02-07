@@ -9,8 +9,7 @@
 1. Download project zip and extract into a folder within "C: Drive"
 2. Open folder in an editor. The developer mainly use VSCode.  
 3. Open a new terminal
-4. Change directory to "Prototype" folder by using "cd" command
-5. Install dependencies by using command "pip install -r requirements.txt"
+4. Install dependencies by using command "pip install -r requirements.txt"
 
 ## 1.3 Change path
 Models can be found in "models" directory
@@ -19,3 +18,7 @@ Models can be found in "models" directory
 3. in "Prototype\services\tone_analysis_function\preprocess_function.py", change model path in line 273 until line 279 (Note: "\" is used)
 4. in "Prototype\pages\2_Facial-Expression-Analysis.py", change model path in line 15 
 5. in "Prototype\pages\Emotion-Analysis.py", change model path in line 53 and line 57
+
+## 1.4 run program
+1. In terminal, change directory to Prototype
+2. Use command "run streamlit Upload-File.py"

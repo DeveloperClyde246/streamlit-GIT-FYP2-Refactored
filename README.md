@@ -22,3 +22,9 @@ Models can be found in "models" directory
 ## 1.4 Run program
 1. In terminal, change directory to Prototype
 2. Use command "run streamlit Upload-File.py"
+
+## Directory introduction
+models: AI models, mainly called by services 
+pages: Web pages
+services: Functions and preprocessor called by pages
+uploaded_videos: Temporary files, mainlyfor storing uploaded videos

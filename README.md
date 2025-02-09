@@ -2,12 +2,12 @@
  
 ## To run:
 ## 1.1 Install applications
-1. install ffmpeg, can refer to this video "https://www.youtube.com/watch?v=JR36oH35Fgg"
+1. Install ffmpeg, can refer to this video "https://www.youtube.com/watch?v=JR36oH35Fgg"
 2. Install python version 3.10.0
 
 ## 1.2 Download file and install dependencies
 1. Download project zip and extract into a folder within "C: Drive"
-2. Open folder in an editor. The developer mainly use VSCode.  
+2. Open folder in an editor. The developer mainly use VSCode
 3. Open a new terminal
 4. Install dependencies by using command "pip install -r requirements.txt"
 
@@ -20,11 +20,14 @@ Models can be found in "models" directory
 5. in "Prototype\pages\Emotion-Analysis.py", change model path in line 53 and line 57
 
 ## 1.4 Run program
-1. In terminal, change directory to Prototype
-2. Use command "run streamlit Upload-File.py"
+1. In terminal, change directory to "Prototype" directory
+2. Use command "streamlit run Upload-File.py"
 
-## Directory introduction
+## Directories
 models: AI models, mainly called by services 
+
 pages: Web pages
+
 services: Functions and preprocessor called by pages
+
 uploaded_videos: Temporary files, mainlyfor storing uploaded videos

@@ -13,7 +13,7 @@
 
 ## 1.3 Change path
 Models can be found in "models" directory
-1. in "Prototype\services\stress_analysis_function\function_class.py", change model path of line 57, line 65 (Note: "/" is used instead of "\")
+1. in "Prototype\services\stress_analysis_function\function_class.py", change model path of line 57, line 65 (Note: "/" is used instead of "&#92;")
 2. in "Prototype\services\tone_analysis_function\preprocess_function.py", change model path in line 238 until line 241 (Note: "\" is used)
 3. in "Prototype\services\tone_analysis_function\preprocess_function.py", change model path in line 273 until line 279 (Note: "\" is used)
 4. in "Prototype\pages\2_Facial-Expression-Analysis.py", change model path in line 15 

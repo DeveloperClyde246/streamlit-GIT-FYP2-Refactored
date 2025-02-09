@@ -30,4 +30,4 @@ pages: Web pages
 
 services: Functions and preprocessor called by pages
 
-uploaded_videos: Temporary files, mainlyfor storing uploaded videos
+uploaded_videos: Temporary files, mainly for storing uploaded videos

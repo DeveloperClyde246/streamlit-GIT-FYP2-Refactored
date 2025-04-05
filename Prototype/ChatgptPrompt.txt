@@ -1,0 +1,495 @@
+//----------------------this is facial-expression-analysis.py
+
+import streamlit as st
+import pandas as pd
+import matplotlib.pyplot as plt
+# from Preprocessor import Preprocessor
+import tempfile
+import os
+import numpy as np
+import cv2
+import time
+from services.facial_expression_recognition_function.Preprocessor import Preprocessor
+
+import tensorflow as tf
+from tensorflow.keras.models import load_model
+
+model_path = r"C:\Users\KEYU\Documents\GitHub\GIT-FYP2-Refactored\Prototype\models\facial_expression_model\model3.h5" #since model is not in the reference path or 'page' directory, have to use absolute path, Note: add this in doc, must be setup when deploying
+
+model = load_model(model_path)#load model
+
+st.set_page_config(layout="wide")
+st.title("Facial Expression Analysis")
+
+col1, col2 = st.columns([2, 5])  
+
+with col1:
+    st.header("Video")
+
+    st.write(" ")
+    st.write(" ")
+    st.write(" ")
+
+    video_dir = "uploaded_videos"
+    uploaded_video = None
+
+    chosen_question = st.session_state.get("chosen_question", "No question selected.")
+    st.write(f"Question: {chosen_question}")
+
+    #video loading
+    if os.listdir(video_dir):
+        for video_filename in os.listdir(video_dir):
+            video_path = os.path.join(video_dir, video_filename)
+            uploaded_video = video_path
+            st.video(uploaded_video)
+            #st.success(f"Video {video_filename} loaded successfully!")
+
+    if uploaded_video is not None:
+        with tempfile.NamedTemporaryFile(delete=False, suffix='.mp4') as temp_file:
+            with open(uploaded_video, 'rb') as video_file:
+                temp_file.write(video_file.read())
+            temp_video_path = temp_file.name
+
+
+        #time calculation
+        start_time = time.time()
+
+        with st.spinner('Processing...'):
+            preprocessor = Preprocessor()
+            preprocessed_data = preprocessor.preprocess(temp_video_path)
+            st.write(f"Extracted {len(preprocessed_data)} frames from the video.")
+
+            processed_frames = np.array(preprocessed_data)
+            predictions = model.predict(processed_frames)
+            predicted_emotions = np.argmax(predictions, axis=1)
+
+            #end timing the processing
+            end_time = time.time()
+            total_time = end_time - start_time
+
+            #map predictions to emotion labels
+            emotion_labels = ['Angry', 'Disgust', 'Fear', 'Happy', 'Sad', 'Surprise', 'Neutral']
+            emotion_counts = pd.Series(predicted_emotions).value_counts().sort_index()
+            emotion_counts.index = [emotion_labels[i] for i in emotion_counts.index]
+
+            #total processing time
+            st.write(f"Total processing time: {total_time:.2f} seconds")
+
+            #Clean up the temporary file
+            os.remove(temp_video_path)
+
+with col2:
+    if uploaded_video is not None and len(predicted_emotions) > 0:
+        # Create a bar chart for emotion counts
+        fig, ax = plt.subplots(figsize=(8, 6))
+        ax.bar(emotion_counts.index, emotion_counts.values, color=["#FF9999", "#66B2FF", "#99FF99", "#FFCC99", "#FFD700", "#87CEFA", "#90EE90"])
+        ax.set_title("Facial Expression Distribution", fontsize=14)
+        ax.set_xlabel("Emotions", fontsize=12)
+        ax.set_ylabel("Frame Counts", fontsize=12)
+        ax.tick_params(axis='x', rotation=45)  # Rotate x-axis labels for better readability
+
+        col1, col2 = st.columns([2, 1])
+
+        with col1:
+            st.subheader("Facial Expression Distribution")
+            st.pyplot(fig)  # Display the bar chart
+
+        with col2:
+            st.write("###  ")
+            st.write(" ")
+            st.write(" ")
+            # Rename the DataFrame columns
+            emotion_counts = emotion_counts.reset_index()
+            emotion_counts.columns = ['Emotions', 'Frames']
+            st.table(emotion_counts)
+
+        # Display the message for the maximum emotion
+        max_emotion = emotion_counts.loc[emotion_counts['Frames'].idxmax()]['Emotions']
+        st.write(f"Final result: The facial expression of the candidate is {max_emotion} in this video.")
+    else:
+        st.write("Upload a video to view the emotion distribution.")
+
+
+if st.button("Back"):
+    st.switch_page("pages/1_Home.py")
+
+
+
+//-------------------------------------this is Emotion-Analysis.py
+import streamlit as st
+import tempfile
+import numpy as np
+import librosa
+import joblib
+import plotly.express as px
+import matplotlib.pyplot as plt
+import os
+from services.tone_analysis_function.preprocess_function import *
+
+
+st.title("Emotion Analysis")
+col1, col2 = st.columns([2, 5]) 
+
+video_dir = "uploaded_videos"
+uploaded_file = None
+
+with col1:
+    st.subheader("Video")
+    st.write(" ")
+    st.write(" ")
+    st.write(" ")
+    st.write(" ")
+    st.write(" ")
+    st.write(" ")
+    st.write(" ")
+    st.write(" ")
+    st.write(" ")
+    st.write(" ")
+
+    chosen_question = st.session_state.get("chosen_question", "No question selected.")
+    st.write(f"Question: {chosen_question}")
+
+    if os.listdir(video_dir):
+        for video_filename in os.listdir(video_dir):
+            video_path = os.path.join(video_dir, video_filename)
+            uploaded_file = video_path
+            st.video(uploaded_file)
+            #st.success(f"Video {video_filename} loaded successfully!")
+    if uploaded_file is not None:
+        tfile = tempfile.NamedTemporaryFile(delete=False, suffix='.mp4')
+        with open(uploaded_file, 'rb') as video_file:
+            tfile.write(video_file.read())
+
+with col2:
+    tab1, tab2 = st.tabs(["Extracted Audio Features", "Emotions Analysis"])
+    with tab1:
+        with st.spinner('Processing...'):
+
+            audiofile = extract_audio(tfile.name)# Extract audio from video
+            features = preprocess_audio(audiofile)# Preprocess audio
+
+            # label encoder and feature scaler
+            emotion_le_path = r"C:\Users\KEYU\Documents\GitHub\GIT-FYP2-Refactored\Prototype\models\emotion_model\emotion_label_encoder.joblib"
+            emotion_le = joblib.load(emotion_le_path)
+
+            emotion_scaler_path = r"C:\Users\KEYU\Documents\GitHub\GIT-FYP2-Refactored\Prototype\models\emotion_model\emotion_feature_scaler.joblib"
+            emotion_scaler = joblib.load(emotion_scaler_path)
+            
+            #predict emotions
+            emotion_results = predict_emotion(features, emotion_scaler, emotion_le)
+
+            #display the extracted audio features
+            st.write("Extracted Audio Features: ")
+            st.write(features)
+            st.write("Shape of the features:", features.shape)
+
+            col1, col2 = st.columns([1, 1]) 
+            with col1:
+                # audio waveform
+                st.write("Audio Waveform:")
+                y, sr = librosa.load(audiofile, sr=None)
+                fig, ax = plt.subplots()
+                librosa.display.waveshow(y, sr=sr, ax=ax)
+                ax.set(title='Waveform of the Audio')
+                st.pyplot(fig)
+
+            with col2:
+                # spectrogram
+                st.write("Spectrogram:")
+                fig, ax = plt.subplots()
+                S = librosa.feature.melspectrogram(y=y, sr=sr, n_mels=128)
+                S_dB = librosa.power_to_db(S, ref=np.max)
+                img = librosa.display.specshow(S_dB, sr=sr, x_axis='time', y_axis='mel', ax=ax)
+                fig.colorbar(img, ax=ax, format='%+2.0f dB')
+                ax.set(title='Mel-frequency spectrogram')
+                st.pyplot(fig)
+
+    with tab2: 
+        #display Emotions results
+        for model, scores in emotion_results.items():
+            st.subheader(model)
+            if len(emotion_le.classes_) == len(scores):
+                col1, col2 = st.columns([2, 4])
+                with col1:
+                    st.write(" ")
+                    st.write(" ")
+                    st.write(" ")
+                    st.write(" ")
+                    st.write(" ")
+                    for emotion, score in zip(emotion_le.classes_, scores):
+                        st.write(f"{emotion}: {score * 100:.2f}% section")
+                with col2:
+                    # Plot pie chart 
+                    fig = px.pie(values=[s * 100 for s in scores], names=emotion_le.classes_, title=f"{model} Emotions",
+                                    color=emotion_le.classes_, color_discrete_sequence=px.colors.qualitative.Plotly)#with consistent colors
+                    st.plotly_chart(fig)
+
+                most_likely_emotion = emotion_le.classes_[np.argmax(scores)]
+                st.write(f"Results : The model predicts that this candidate is more likely to be {most_likely_emotion}.")
+
+                # Display confidence and consistency metrics
+                confidence = np.max(scores) * 100
+                consistency = np.std(scores) * 100
+                st.write(f"Confidence: {confidence:.2f}%")
+                st.write(f"Consistency: {consistency:.2f}%")
+            else:
+                st.error("Mismatch between emotions and scores. Check model output!")
+
+if st.button("Back"):
+    st.switch_page("pages/1_Home.py")
+
+
+
+//--------------------------this is personality-analysis.py
+import streamlit as st
+import tempfile
+import numpy as np
+import librosa
+import joblib
+import plotly.express as px
+import matplotlib.pyplot as plt
+import os
+
+# from preprocess_function import extract_audio, preprocess_audio, predict_personality
+from services.tone_analysis_function.preprocess_function import *
+
+# Streamlit app
+st.title("Personality Analysis")
+
+col1, col2 = st.columns([2, 5])  #left column is wider than the right column
+
+with col1:
+    st.write(" ")
+    st.write(" ")
+    st.write(" ")
+    st.write(" ")
+    st.write(" ")
+    st.write(" ")
+    st.write(" ")
+    st.write(" ")
+    st.write(" ")
+    st.write(" ")
+    st.write(" ")
+    st.write(" ")
+    st.write(" ")
+    st.write(" ")
+
+    video_dir = "uploaded_videos"
+    uploaded_file = None
+
+    chosen_question = st.session_state.get("chosen_question", "No question selected.")
+    st.write(f"Question: {chosen_question}")
+    #video
+    if os.listdir(video_dir):
+        for video_filename in os.listdir(video_dir):
+            video_path = os.path.join(video_dir, video_filename)
+            uploaded_file = video_path
+            st.video(uploaded_file)
+            #st.success(f"Video {video_filename} loaded successfully!")
+
+
+with col2:
+    if uploaded_file is not None:
+        with open(uploaded_file, 'rb') as file: #save the uploaded file to a temporary location
+            tfile = tempfile.NamedTemporaryFile(delete=False)
+            tfile.write(file.read())  #write the contents to the temp file
+
+            with st.spinner('Processing...'):
+                #extract audio
+                audiofile = extract_audio(tfile.name)
+                features = preprocess_audio(audiofile)
+
+                # Load the label encoder and feature scaler
+                personality_le = joblib.load(r"C:\Users\KEYU\Documents\GitHub\GIT-FYP2-Refactored\Prototype\models\personality_model\personality_label_encoder.joblib") #############change path################
+                personality_scaler = joblib.load(r"C:\Users\KEYU\Documents\GitHub\GIT-FYP2-Refactored\Prototype\models\personality_model\personality_feature_scaler.joblib") #############change path################ 
+
+                # Predict personality traits
+                personality_results = predict_personality(features, personality_scaler, personality_le)
+
+
+        tab1, tab2 = st.tabs(["Extracted Audio Features", "Personality Traits Analysis"])
+
+        with tab2:
+            # Display Personality Traits results
+            for model, scores in personality_results.items():
+                st.write("Prediction traits: ")
+                if len(personality_le.classes_) == len(scores):
+                    
+                    col1, col2 = st.columns([3, 5])     
+                    with col1:
+                        st.write(" ")
+                        st.write(" ")
+                        st.write(" ")
+                        st.write(" ")
+                        st.write(" ")
+                        for trait, score in zip(personality_le.classes_, scores):
+                            st.write(f"{trait}: {score * 100:.2f}% section")
+                    with col2:
+                        # Plot radar charts with color fill
+                        fig = px.line_polar(
+                            r=scores,
+                            theta=personality_le.classes_,
+                            line_close=True
+                        )
+                        fig.update_traces(fill='toself')
+                        st.plotly_chart(fig)
+
+                    # Determine the most likely personality trait
+                    most_likely_trait = personality_le.classes_[np.argmax(scores)]
+                    st.write(f"Results : The model predicts that this candidate is more likely to be {most_likely_trait}.")
+
+                    # Provide detailed description based on the most likely personality trait
+                    trait_descriptions = {
+                        "openness": "This candidate are likely to prefer new, exciting situations. Candidate value knowledge, and friends and family are likely to describe them as curious and intellectual.",
+                        "conscientiousness": "This candidate have a lot of self-discipline and exceed others’ expectations. Candidate have a strong focus and prefer order and planned activities over spontaneity.",
+                        "extroversion": "Extroverts thrive in social situations. This candidate are action-oriented and appreciate the opportunity to work with others.",
+                        "agreeableness": "This candidate are considerate, kind and sympathetic to others. Like to participate in group activities since they are capable at compromise and helping others.",
+                        "neuroticism": "indicates anxiety and pessimism,lower means emotional stability. This measure can mean you have a more hopeful view of your circumstances. As a low-neurotic or emotionally stable person, others likely admire your calmness and resilience during challenges."
+                    }
+                    st.write(trait_descriptions.get(most_likely_trait, "No description available for this trait."))
+
+                    # Display confidence and consistency metrics
+                    confidence = np.max(scores) * 100
+                    consistency = np.std(scores) * 100
+                    st.write(f"Confidence: {confidence:.2f}%")
+                    st.write(f"Consistency: {consistency:.2f}%")
+                else:
+                    st.error("Mismatch between traits and scores. Check model output!")
+
+        with tab1:
+            # Display the extracted audio features
+            st.write("Extracted Audio Features: ")
+            st.write(features)
+            st.write("Shape of the features:", features.shape)
+
+            col1, col2 = st.columns([1, 1]) 
+            with col1:
+                # Visualize the audio waveform
+                st.write("Audio Waveform:")
+                y, sr = librosa.load(audiofile, sr=None)
+                fig, ax = plt.subplots()
+                librosa.display.waveshow(y, sr=sr, ax=ax)
+                ax.set(title='Waveform of the Audio')
+                st.pyplot(fig)
+
+            with col2:
+                # Visualize the spectrogram
+                st.write("Spectrogram:")
+                fig, ax = plt.subplots()
+                S = librosa.feature.melspectrogram(y=y, sr=sr, n_mels=128)
+                S_dB = librosa.power_to_db(S, ref=np.max)
+                img = librosa.display.specshow(S_dB, sr=sr, x_axis='time', y_axis='mel', ax=ax)
+                fig.colorbar(img, ax=ax, format='%+2.0f dB')
+                ax.set(title='Mel-frequency spectrogram')
+                st.pyplot(fig)
+
+if st.button("Back"):
+    st.switch_page("pages/1_Home.py")
+
+
+
+//---------------------------------this is Stress-Analysis.py
+import streamlit as st
+import os
+# pip install -U openai-whisper
+from services.stress_analysis_function.function_class import convert_video_to_audio, transcribe_audio, preprocess_text, remove_stopwords, convert_slang, translate_to_indonesian, stem_text, load_bert_model, predict_sentiment
+import langcodes
+import tempfile
+
+# RUN: python -m streamlit run "C:\Users\Admin\OneDrive\Desktop\speech-score\main-score.py"
+
+st.title('Stress Detection')
+
+# # Accept video file input
+# uploaded_video = st.file_uploader("Upload a video file", type=["mp4", "mov", "avi", "mkv"])
+
+# Define the video directory
+video_dir = "uploaded_videos"
+uploaded_video = None
+
+col1, col2 = st.columns([2, 5])
+
+with col1:
+    chosen_question = st.session_state.get("chosen_question", "No question selected.")
+    st.write(f"Question: {chosen_question}")
+
+    if os.listdir(video_dir):
+        for video_filename in os.listdir(video_dir):
+            video_path = os.path.join(video_dir, video_filename)
+            uploaded_video = video_path
+            st.video(uploaded_video)
+            break  # Process only the first video
+with col2:
+    if uploaded_video is not None:
+
+        # Single spinner for the entire process
+        with st.spinner("Processing your request, please wait..."):
+            # Save the uploaded file to a temporary location
+            with open(uploaded_video, 'rb') as file:
+                tfile = tempfile.NamedTemporaryFile(delete=False, suffix=".mp4")
+                tfile.write(file.read())  # Write contents to the temp file
+
+            # Convert video to audio
+            audio_file = convert_video_to_audio(tfile.name)
+            #st.success("Video has been processed and audio extracted!")
+
+            if audio_file:
+                # st.success("Audio extracted successfully!")
+
+                # Transcribe audio
+                transcription_result = transcribe_audio(audio_file)
+                speech_text = transcription_result["text"]
+                detected_language = transcription_result["language"]
+
+                st.write("**Detected Language:**", langcodes.get(detected_language).display_name())
+                st.write("**Transcribed Text:**", speech_text)
+
+                # Translate to Indonesian if necessary
+                if detected_language != "id":
+                    speech_text = translate_to_indonesian(speech_text)
+                    st.write("**Translated Text:**", speech_text)
+
+                # Preprocess text
+                speech_text = preprocess_text(speech_text)
+                speech_text = remove_stopwords(speech_text)
+                speech_text = convert_slang(speech_text)
+                speech_text = stem_text(speech_text)
+
+                # Clean up audio file
+                os.remove(audio_file)
+
+                # Load BERT model and predict sentiment
+                bert_model_name = 'bert-base-uncased'
+                num_classes = 2
+                model_path = "C:/Users/KEYU/Documents/GitHub/GIT-FYP2-Refactored/Prototype/models/stress_analysis_model/bert_classifier.pth"
+                loaded_model, tokenizer, device = load_bert_model(bert_model_name, num_classes, model_path)
+                predicted_stress = predict_sentiment(speech_text, loaded_model, tokenizer, device)
+
+                # Show Output
+                if predicted_stress == 1:
+                    st.markdown(
+                        """
+                        <div style="background-color: #FFDDC1; padding: 15px; border-radius: 10px; text-align: center;">
+                            <h3 style="color: #E63946;"> The candidate is experiencing stress </h3>
+                        </div>
+                        """,
+                        unsafe_allow_html=True
+                    )
+                else:
+                    st.markdown(
+                        """
+                        <div style="background-color: #C6F6D5; padding: 15px; border-radius: 10px; text-align: center;">
+                            <h3 style="color: #2D6A4F;"> The candidate is not experiencing stress </h3>
+                        </div>
+                        """,
+                        unsafe_allow_html=True
+                    )
+            else:
+                st.error("Failed to extract audio from the video.")
+    else:
+        st.warning("Please upload a video file.")
+
+if st.button("Back"):
+    st.switch_page("pages/1_Home.py")
+
+

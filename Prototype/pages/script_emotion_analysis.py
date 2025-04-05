@@ -47,7 +47,7 @@ if uploaded_file is not None:
             if len(emotion_le.classes_) == len(scores):
                 for emotion, score in zip(emotion_le.classes_, scores):
                     st.write(f"{emotion}: {score * 100:.2f}%")
-                
+
                 most_likely_emotion = emotion_le.classes_[np.argmax(scores)]
                 confidence = np.max(scores) * 100
                 consistency = np.std(scores) * 100
@@ -55,6 +55,43 @@ if uploaded_file is not None:
                 st.write(f"\n➡️ Final Result: {most_likely_emotion}")
                 st.write(f"Confidence: {confidence:.2f}%")
                 st.write(f"Consistency: {consistency:.2f}%")
+                
+                # Define emotion weights
+                emotion_weights = {
+                    'Happy': 2.0,
+                    'Surprise': 1.0,
+                    'Neutral': 1.0,
+                    'Sad': -1.0,
+                    'Fear': -1.0,
+                    'Disgust': -2.0,
+                    'Angry': -2.0
+                }
+
+                # Use the first model's results (assumption: one model)
+                model_name, scores = next(iter(emotion_results.items()))
+                emotions = emotion_le.classes_
+
+                # Log for debugging
+                st.write("💬 Emotion Probabilities & Weights:")
+                raw_score = 0.0
+                for emotion, score in zip(emotions, scores):
+                    # Normalize emotion to title case for matching
+                    weight = emotion_weights.get(emotion.title(), 0)
+                    st.write(f"{emotion}: {score*100:.2f}% × {weight} = {score * weight:.4f}")
+                    raw_score += score * weight
+
+                st.write(f"🧮 Raw Score: {raw_score:.4f}")
+
+                # Normalize raw score from [-2, +2] to [0, 100]
+                min_possible = -2.0
+                max_possible = 2.0
+                normalized_score = ((raw_score - min_possible) / (max_possible - min_possible)) * 100
+                normalized_score = round(normalized_score, 2)
+
+                st.markdown(f"### 🎓 Final Candidate Tone Score: **{normalized_score} / 100**")
+
+
+
             else:
                 st.error("Mismatch between emotions and scores. Check model output!")
 

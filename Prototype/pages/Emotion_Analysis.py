@@ -110,10 +110,10 @@ with col2:
                 st.write(f"Results : The model predicts that this candidate is more likely to be {most_likely_emotion}.")
 
                 # Display confidence and consistency metrics
-                confidence = np.max(scores) * 100
-                consistency = np.std(scores) * 100
-                st.write(f"Confidence: {confidence:.2f}%")
-                st.write(f"Consistency: {consistency:.2f}%")
+                # confidence = np.max(scores) * 100
+                # consistency = np.std(scores) * 100
+                # st.write(f"Confidence: {confidence:.2f}%")
+                # st.write(f"Consistency: {consistency:.2f}%")
 
                 # Define emotion weights
                 emotion_weights = {

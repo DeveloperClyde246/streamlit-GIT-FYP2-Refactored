@@ -1,115 +1,352 @@
-remove those unnecessary UI
+now combine all to calculate average marks of all final marks in each analysis section
 
-//--------------this is Facial-Expression-Analysis.py
+//--------------this is script_emotion_analysis.py
 import streamlit as st
-import pandas as pd
-import matplotlib.pyplot as plt
-# from Preprocessor import Preprocessor
 import tempfile
-import os
 import numpy as np
-import cv2
+import joblib
+import os
+from services.tone_analysis_function.preprocess_function import extract_audio, preprocess_audio, predict_emotion
+
+st.title("Emotion Analysis")
+
+video_dir = "uploaded_videos"
+uploaded_file = None
+
+# Display question info
+chosen_question = st.session_state.get("chosen_question", "No question selected.")
+st.write(f"Question: {chosen_question}")
+
+# Display video
+if os.listdir(video_dir):
+    for video_filename in os.listdir(video_dir):
+        video_path = os.path.join(video_dir, video_filename)
+        uploaded_file = video_path
+        st.video(uploaded_file)
+
+if uploaded_file is not None:
+    tfile = tempfile.NamedTemporaryFile(delete=False, suffix='.mp4')
+    with open(uploaded_file, 'rb') as video_file:
+        tfile.write(video_file.read())
+
+    with st.spinner('Processing...'):
+        # Extract and preprocess audio
+        audiofile = extract_audio(tfile.name)
+        features = preprocess_audio(audiofile)
+
+        # Load models
+        emotion_le_path = r"C:\Users\KEYU\Documents\GitHub\GIT-FYP2-Refactored\Prototype\models\emotion_model\emotion_label_encoder.joblib"
+        emotion_scaler_path = r"C:\Users\KEYU\Documents\GitHub\GIT-FYP2-Refactored\Prototype\models\emotion_model\emotion_feature_scaler.joblib"
+        
+        emotion_le = joblib.load(emotion_le_path)
+        emotion_scaler = joblib.load(emotion_scaler_path)
+
+        # Predict
+        emotion_results = predict_emotion(features, emotion_scaler, emotion_le)
+
+        # Display results
+        for model, scores in emotion_results.items():
+            st.subheader(f"Model: {model}")
+            if len(emotion_le.classes_) == len(scores):
+                for emotion, score in zip(emotion_le.classes_, scores):
+                    st.write(f"{emotion}: {score * 100:.2f}%")
+
+                most_likely_emotion = emotion_le.classes_[np.argmax(scores)]
+                confidence = np.max(scores) * 100
+                consistency = np.std(scores) * 100
+
+                st.write(f"\n➡️ Final Result: {most_likely_emotion}")
+                st.write(f"Confidence: {confidence:.2f}%")
+                st.write(f"Consistency: {consistency:.2f}%")
+                
+                # Define emotion weights
+                emotion_weights = {
+                    'Happy': 2.0,
+                    'Surprise': 1.0,
+                    'Neutral': 1.0,
+                    'Sad': -1.0,
+                    'Fear': -1.0,
+                    'Disgust': -2.0,
+                    'Angry': -2.0
+                }
+
+                # Use the first model's results (assumption: one model)
+                model_name, scores = next(iter(emotion_results.items()))
+                emotions = emotion_le.classes_
+
+                # Log for debugging
+                st.write("💬 Emotion Probabilities & Weights:")
+                raw_score = 0.0
+                for emotion, score in zip(emotions, scores):
+                    # Normalize emotion to title case for matching
+                    weight = emotion_weights.get(emotion.title(), 0)
+                    st.write(f"{emotion}: {score*100:.2f}% × {weight} = {score * weight:.4f}")
+                    raw_score += score * weight
+
+                st.write(f"🧮 Raw Score: {raw_score:.4f}")
+
+                # Normalize raw score from [-2, +2] to [0, 100]
+                min_possible = -2.0
+                max_possible = 2.0
+                normalized_score = ((raw_score - min_possible) / (max_possible - min_possible)) * 100
+                normalized_score = round(normalized_score, 2)
+
+                st.markdown(f"### 🎓 Final Candidate Tone Score: **{normalized_score} / 100**")
+
+
+
+            else:
+                st.error("Mismatch between emotions and scores. Check model output!")
+
+if st.button("Back"):
+    st.switch_page("pages/1_Home.py")
+
+
+
+//---------------------------this is script_facial_expression_analysis.py
+import streamlit as st
+import tempfile
+import numpy as np
+import pandas as pd
+import os
 import time
 from services.facial_expression_recognition_function.Preprocessor import Preprocessor
-
-import tensorflow as tf
 from tensorflow.keras.models import load_model
 
-model_path = r"C:\Users\KEYU\Documents\GitHub\GIT-FYP2-Refactored\Prototype\models\facial_expression_model\model3.h5" #since model is not in the reference path or 'page' directory, have to use absolute path, Note: add this in doc, must be setup when deploying
+# Load model
+model_path = r"C:\Users\KEYU\Documents\GitHub\GIT-FYP2-Refactored\Prototype\models\facial_expression_model\model3.h5"
+model = load_model(model_path)
 
-model = load_model(model_path)#load model
-
-st.set_page_config(layout="wide")
 st.title("Facial Expression Analysis")
 
-col1, col2 = st.columns([2, 5])  
+video_dir = "uploaded_videos"
+uploaded_video = None
 
-with col1:
-    st.header("Video")
+chosen_question = st.session_state.get("chosen_question", "No question selected.")
+st.write(f"Question: {chosen_question}")
 
-    st.write(" ")
-    st.write(" ")
-    st.write(" ")
+# Load video
+if os.listdir(video_dir):
+    for video_filename in os.listdir(video_dir):
+        video_path = os.path.join(video_dir, video_filename)
+        uploaded_video = video_path
+        st.video(uploaded_video)
 
-    video_dir = "uploaded_videos"
-    uploaded_video = None
+if uploaded_video is not None:
+    with tempfile.NamedTemporaryFile(delete=False, suffix='.mp4') as temp_file:
+        with open(uploaded_video, 'rb') as video_file:
+            temp_file.write(video_file.read())
+        temp_video_path = temp_file.name
 
-    chosen_question = st.session_state.get("chosen_question", "No question selected.")
-    st.write(f"Question: {chosen_question}")
-
-    #video loading
-    if os.listdir(video_dir):
-        for video_filename in os.listdir(video_dir):
-            video_path = os.path.join(video_dir, video_filename)
-            uploaded_video = video_path
-            st.video(uploaded_video)
-            #st.success(f"Video {video_filename} loaded successfully!")
-
-    if uploaded_video is not None:
-        with tempfile.NamedTemporaryFile(delete=False, suffix='.mp4') as temp_file:
-            with open(uploaded_video, 'rb') as video_file:
-                temp_file.write(video_file.read())
-            temp_video_path = temp_file.name
-
-
-        #time calculation
+    with st.spinner('Processing...'):
         start_time = time.time()
 
-        with st.spinner('Processing...'):
-            preprocessor = Preprocessor()
-            preprocessed_data = preprocessor.preprocess(temp_video_path)
-            st.write(f"Extracted {len(preprocessed_data)} frames from the video.")
+        preprocessor = Preprocessor()
+        preprocessed_data = preprocessor.preprocess(temp_video_path)
+        processed_frames = np.array(preprocessed_data)
+        predictions = model.predict(processed_frames)
+        predicted_emotions = np.argmax(predictions, axis=1)
 
-            processed_frames = np.array(preprocessed_data)
-            predictions = model.predict(processed_frames)
-            predicted_emotions = np.argmax(predictions, axis=1)
+        end_time = time.time()
+        total_time = end_time - start_time
+        os.remove(temp_video_path)
 
-            #end timing the processing
-            end_time = time.time()
-            total_time = end_time - start_time
+        emotion_labels = ['Angry', 'Disgust', 'Fear', 'Happy', 'Sad', 'Surprise', 'Neutral']
+        emotion_counts = pd.Series(predicted_emotions).value_counts().sort_index()
+        emotion_counts.index = [emotion_labels[i] for i in emotion_counts.index]
 
-            #map predictions to emotion labels
-            emotion_labels = ['Angry', 'Disgust', 'Fear', 'Happy', 'Sad', 'Surprise', 'Neutral']
-            emotion_counts = pd.Series(predicted_emotions).value_counts().sort_index()
-            emotion_counts.index = [emotion_labels[i] for i in emotion_counts.index]
+        # Emotion scoring weights
+        emotion_weights = {
+            'Happy': 2.0,
+            'Surprise': 1.0,
+            'Neutral': 1.0,
+            'Sad': -1.0,
+            'Fear': -1.0,
+            'Disgust': -2.0,
+            'Angry': -2.0
+        }
 
-            #total processing time
-            st.write(f"Total processing time: {total_time:.2f} seconds")
+        # Compute final score
+        total_frames = emotion_counts.sum()
+        raw_score = sum(emotion_counts[emotion] * emotion_weights.get(emotion, 0) for emotion in emotion_counts.index) / total_frames
 
-            #Clean up the temporary file
-            os.remove(temp_video_path)
+        # Normalize [-2, +2] to [0, 100]
+        normalized_score = ((raw_score + 2) / 4) * 100
+        normalized_score = round(normalized_score, 2)
 
-with col2:
-    if uploaded_video is not None and len(predicted_emotions) > 0:
-        # Create a bar chart for emotion counts
-        fig, ax = plt.subplots(figsize=(8, 6))
-        ax.bar(emotion_counts.index, emotion_counts.values, color=["#FF9999", "#66B2FF", "#99FF99", "#FFCC99", "#FFD700", "#87CEFA", "#90EE90"])
-        ax.set_title("Facial Expression Distribution", fontsize=14)
-        ax.set_xlabel("Emotions", fontsize=12)
-        ax.set_ylabel("Frame Counts", fontsize=12)
-        ax.tick_params(axis='x', rotation=45)  # Rotate x-axis labels for better readability
+        # Output
+        st.write(f"Total Processing Time: {total_time:.2f} seconds")
+        st.markdown(f"### 🎓 Final Candidate Facial Expression Score: **{normalized_score} / 100**")
 
-        col1, col2 = st.columns([2, 1])
 
-        with col1:
-            st.subheader("Facial Expression Distribution")
-            st.pyplot(fig)  # Display the bar chart
+//----------------------this is script_personality_analysis.py
+import streamlit as st
+import tempfile
+import numpy as np
+import joblib
+import os
+from services.tone_analysis_function.preprocess_function import extract_audio, preprocess_audio, predict_personality
 
-        with col2:
-            st.write("###  ")
-            st.write(" ")
-            st.write(" ")
-            # Rename the DataFrame columns
-            emotion_counts = emotion_counts.reset_index()
-            emotion_counts.columns = ['Emotions', 'Frames']
-            st.table(emotion_counts)
+# Streamlit app
+st.title("Personality Analysis")
 
-        # Display the message for the maximum emotion
-        max_emotion = emotion_counts.loc[emotion_counts['Frames'].idxmax()]['Emotions']
-        st.write(f"Final result: The facial expression of the candidate is {max_emotion} in this video.")
-    else:
-        st.write("Upload a video to view the emotion distribution.")
+video_dir = "uploaded_videos"
+uploaded_file = None
 
+chosen_question = st.session_state.get("chosen_question", "No question selected.")
+st.write(f"Question: {chosen_question}")
+
+# Load video
+if os.listdir(video_dir):
+    for video_filename in os.listdir(video_dir):
+        video_path = os.path.join(video_dir, video_filename)
+        uploaded_file = video_path
+        st.video(uploaded_file)
+
+# Process video
+if uploaded_file is not None:
+    with open(uploaded_file, 'rb') as file:
+        tfile = tempfile.NamedTemporaryFile(delete=False)
+        tfile.write(file.read())
+
+    with st.spinner('Processing...'):
+        # Audio preprocessing
+        audiofile = extract_audio(tfile.name)
+        features = preprocess_audio(audiofile)
+
+        # Load encoders
+        personality_le = joblib.load(r"C:\Users\KEYU\Documents\GitHub\GIT-FYP2-Refactored\Prototype\models\personality_model\personality_label_encoder.joblib")
+        personality_scaler = joblib.load(r"C:\Users\KEYU\Documents\GitHub\GIT-FYP2-Refactored\Prototype\models\personality_model\personality_feature_scaler.joblib")
+
+        # Predict
+        personality_results = predict_personality(features, personality_scaler, personality_le)
+
+        
+######
+        for model, scores in personality_results.items():
+            if len(personality_le.classes_) == len(scores):
+                st.subheader("Predicted Traits:")
+                for trait, score in zip(personality_le.classes_, scores):
+                    st.write(f"{trait}: {score * 100:.2f}%")
+
+                most_likely_trait = personality_le.classes_[np.argmax(scores)]
+                confidence = np.max(scores) * 100
+                consistency = np.std(scores) * 100
+
+                st.markdown(f"##### 🎯 Predicted Personality: **{most_likely_trait}**")
+                # st.write(f"Confidence: {confidence:.2f}%")
+                # st.write(f"Consistency: {consistency:.2f}%")
+
+                # Trait Descriptions
+                trait_descriptions = {
+                    "openness": "This candidate is likely to prefer new, exciting situations. Curious and intellectual.",
+                    "conscientiousness": "This candidate has self-discipline, strong focus, and prefers order.",
+                    "extroversion": "This candidate thrives in social situations and enjoys collaboration.",
+                    "agreeableness": "This candidate is kind, empathetic, and good at teamwork.",
+                    "neuroticism": "Lower scores suggest emotional stability and calmness under pressure."
+                }
+                st.write("📝 Description:")
+                st.write(trait_descriptions.get(most_likely_trait, "No description available."))
+
+                # 💯 Final Score Calculation
+                trait_weights = {
+                    "openness": 1.0,
+                    "conscientiousness": 2.0,
+                    "extroversion": 1.5,
+                    "agreeableness": 1.0,
+                    "neuroticism": -2.0
+                }
+
+                raw_score = sum(score * trait_weights.get(trait, 0) for trait, score in zip(personality_le.classes_, scores))
+                normalized_score = ((raw_score + 2) / 4) * 100  # Normalize from [-2, +2] to [0, 100]
+                normalized_score = round(normalized_score, 2)
+
+                st.markdown(f"##### 🧠 Final Candidate Personality Score: **{normalized_score} / 100**")
+
+        #######
+            else:
+                st.error("Mismatch between traits and scores. Check model output!")
+
+if st.button("Back"):
+    st.switch_page("pages/1_Home.py")
+
+
+//-----------------this is script_stress_analysis.py
+import streamlit as st
+import os
+import tempfile
+import langcodes
+from services.stress_analysis_function.function_class import (
+    convert_video_to_audio, transcribe_audio, preprocess_text,
+    remove_stopwords, convert_slang, translate_to_indonesian,
+    stem_text, load_bert_model, predict_sentiment
+)
+
+st.title('Stress Detection')
+
+video_dir = "uploaded_videos"
+uploaded_video = None
+
+# Display question
+chosen_question = st.session_state.get("chosen_question", "No question selected.")
+st.write(f"Question: {chosen_question}")
+
+# Load first video found
+if os.listdir(video_dir):
+    for video_filename in os.listdir(video_dir):
+        video_path = os.path.join(video_dir, video_filename)
+        uploaded_video = video_path
+        st.video(uploaded_video)
+        break  # Process only the first video
+
+if uploaded_video is not None:
+    with st.spinner("Processing your request, please wait..."):
+        # Save video temporarily
+        with open(uploaded_video, 'rb') as file:
+            tfile = tempfile.NamedTemporaryFile(delete=False, suffix=".mp4")
+            tfile.write(file.read())
+
+        # Extract audio
+        audio_file = convert_video_to_audio(tfile.name)
+
+        if audio_file:
+            # Transcribe
+            transcription_result = transcribe_audio(audio_file)
+            speech_text = transcription_result["text"]
+            detected_language = transcription_result["language"]
+
+            st.write("Detected Language:", langcodes.get(detected_language).display_name())
+            st.write("Transcribed Text:", speech_text)
+
+            # Translate if needed
+            if detected_language != "id":
+                speech_text = translate_to_indonesian(speech_text)
+                st.write("Translated Text:", speech_text)
+
+            # Text preprocessing
+            speech_text = preprocess_text(speech_text)
+            speech_text = remove_stopwords(speech_text)
+            speech_text = convert_slang(speech_text)
+            speech_text = stem_text(speech_text)
+
+            os.remove(audio_file)
+
+            # Load BERT model and predict
+            model_path = "C:/Users/KEYU/Documents/GitHub/GIT-FYP2-Refactored/Prototype/models/stress_analysis_model/bert_classifier.pth"
+            loaded_model, tokenizer, device = load_bert_model('bert-base-uncased', 2, model_path)
+            predicted_stress = predict_sentiment(speech_text, loaded_model, tokenizer, device)
+
+            # Result + Final mark
+            if predicted_stress == 1:
+                st.write("Stress Detected: ✅ Yes")
+                st.markdown("### 🧠 Final Candidate Stress Score: **70 / 100**")
+            else:
+                st.write("Stress Detected: ❌ No")
+                st.markdown("##### 🧠 Final Candidate Stress Score: **100 / 100**")
+        else:
+            st.error("Failed to extract audio from the video.")
+else:
+    st.warning("Please upload a video file.")
 
 if st.button("Back"):
     st.switch_page("pages/1_Home.py")

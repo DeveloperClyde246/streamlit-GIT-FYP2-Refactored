@@ -67,6 +67,8 @@ with col2:
         tab1, tab2 = st.tabs(["Extracted Audio Features", "Personality Traits Analysis"])
 
         with tab2:
+            #####
+
             # Display Personality Traits results
             for model, scores in personality_results.items():
                 st.write("Prediction traits: ")
@@ -106,12 +108,29 @@ with col2:
                     st.write(trait_descriptions.get(most_likely_trait, "No description available for this trait."))
 
                     # Display confidence and consistency metrics
-                    confidence = np.max(scores) * 100
-                    consistency = np.std(scores) * 100
-                    st.write(f"Confidence: {confidence:.2f}%")
-                    st.write(f"Consistency: {consistency:.2f}%")
+                    # confidence = np.max(scores) * 100
+                    # consistency = np.std(scores) * 100
+                    # st.write(f"Confidence: {confidence:.2f}%")
+                    # st.write(f"Consistency: {consistency:.2f}%")
+
+                    # 🎯 Final Score Calculation
+                    trait_weights = {
+                        "openness": 1.0,
+                        "conscientiousness": 2.0,
+                        "extroversion": 1.5,
+                        "agreeableness": 1.0,
+                        "neuroticism": -2.0
+                    }
+
+                    raw_score = sum(score * trait_weights.get(trait, 0) for trait, score in zip(personality_le.classes_, scores))
+                    normalized_score = ((raw_score + 2) / 4) * 100
+                    normalized_score = round(normalized_score, 2)
+
+                    st.markdown(f"##### 🧠 Final Candidate Personality Score: **{normalized_score} / 100**")
                 else:
-                    st.error("Mismatch between traits and scores. Check model output!")
+                    st.error("Mismatch between traits and scores. Check model output!")                    
+
+                    ######
 
         with tab1:
             # Display the extracted audio features

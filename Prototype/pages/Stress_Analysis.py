@@ -78,8 +78,8 @@ with col2:
                 if predicted_stress == 1:
                     st.markdown(
                         """
-                        <div style="background-color: #FFDDC1; padding: 15px; border-radius: 10px; text-align: center;">
-                            <h3 style="color: #E63946;"> The candidate is experiencing stress </h3>
+                        <div>
+                            <h5> The candidate is experiencing stress </h5>
                         </div>
                         """,
                         unsafe_allow_html=True
@@ -87,12 +87,16 @@ with col2:
                 else:
                     st.markdown(
                         """
-                        <div style="background-color: #C6F6D5; padding: 15px; border-radius: 10px; text-align: center;">
-                            <h3 style="color: #2D6A4F;"> The candidate is not experiencing stress </h3>
+                        <div>
+                            <h5> The candidate is not experiencing stress </h5>
                         </div>
                         """,
                         unsafe_allow_html=True
                     )
+                # 🧠 Final Score
+                final_score = 70 if predicted_stress == 1 else 100
+                st.markdown(f"##### 🧠 Final Candidate Score in Stress Detection: **{final_score} / 100**")
+
             else:
                 st.error("Failed to extract audio from the video.")
     else:

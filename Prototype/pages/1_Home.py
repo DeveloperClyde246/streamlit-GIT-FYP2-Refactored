@@ -73,15 +73,15 @@ with col2:
     with tab1:
         st.write("Frames Analysis: ")
         if st.button("Facial Expression Analysis"):
-            st.switch_page("pages/2_Facial-Expression-Analysis.py")
+            st.switch_page("pages/2_Facial_Expression_Analysis.py")
         st.write("Tone Analysis: ")
         if st.button("Emotion Analysis"):
-            st.switch_page("pages/Emotion-Analysis.py")
+            st.switch_page("pages/Emotion_Analysis.py")
         if st.button("Personality Analysis"):
-            st.switch_page("pages/Personality-Analysis.py")
+            st.switch_page("pages/Personality_Analysis.py")
         st.write("Transcript text Analysis: ")
         if st.button("Stress Detection"):
-            st.switch_page("pages/Stress-Analysis.py")
+            st.switch_page("pages/Stress_Analysis.py")
     with tab2:
         # Convert video to audio
         audio_file = convert_video_to_audio(tfile.name)

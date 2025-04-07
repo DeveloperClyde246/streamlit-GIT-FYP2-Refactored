@@ -29,7 +29,7 @@ with col1:
     st.write(" ")
 
     chosen_question = st.session_state.get("chosen_question", "No question selected.")
-    st.write(f"Question: {chosen_question}")
+    # st.write(f"Question: {chosen_question}")
 
     if os.listdir(video_dir):
         for video_filename in os.listdir(video_dir):

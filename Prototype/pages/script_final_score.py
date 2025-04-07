@@ -32,8 +32,8 @@ if os.listdir(video_dir):
     for video_filename in os.listdir(video_dir):
         video_path = os.path.join(video_dir, video_filename)
         uploaded_video = video_path
-        st.video(uploaded_video)
-        break
+    st.video(uploaded_video)
+        
 
 final_scores = {}
 
@@ -69,24 +69,25 @@ if uploaded_video is not None:
             break  # Use first model only
 
         # ---------- Facial Expression Analysis ----------
-        model_path = r"C:\Users\KEYU\Documents\GitHub\GIT-FYP2-Refactored\Prototype\models\facial_expression_model\model3.h5"
-        facial_model = load_model(model_path)
+        # model_path = r"C:\Users\KEYU\Documents\GitHub\GIT-FYP2-Refactored\Prototype\models\facial_expression_model\model3.h5"
+        # facial_model = load_model(model_path)
 
-        preprocessor = Preprocessor()
-        preprocessed_data = preprocessor.preprocess(temp_path)
-        predictions = facial_model.predict(np.array(preprocessed_data))
-        predicted_emotions = np.argmax(predictions, axis=1)
+        # preprocessor = Preprocessor()
+        # preprocessed_data = preprocessor.preprocess(temp_path)
+        # predictions = facial_model.predict(np.array(preprocessed_data))
+        # predicted_emotions = np.argmax(predictions, axis=1)
 
-        emotion_labels = ['Angry', 'Disgust', 'Fear', 'Happy', 'Sad', 'Surprise', 'Neutral']
-        emotion_counts = pd.Series(predicted_emotions).value_counts().sort_index()
-        emotion_counts.index = [emotion_labels[i] for i in emotion_counts.index]
+        # emotion_labels = ['Angry', 'Disgust', 'Fear', 'Happy', 'Sad', 'Surprise', 'Neutral']
+        # emotion_counts = pd.Series(predicted_emotions).value_counts().sort_index()
+        # emotion_counts.index = [emotion_labels[i] for i in emotion_counts.index]
 
-        facial_weights = emotion_weights  # same weights
-        total_frames = emotion_counts.sum()
-        facial_raw = sum(emotion_counts[emotion] * facial_weights.get(emotion, 0)
-                         for emotion in emotion_counts.index) / total_frames
-        facial_score = round(((facial_raw + 2) / 4) * 100, 2)
-        final_scores["Facial"] = facial_score
+        # facial_weights = emotion_weights  # same weights
+        # total_frames = emotion_counts.sum()
+        # facial_raw = sum(emotion_counts[emotion] * facial_weights.get(emotion, 0)
+        #                  for emotion in emotion_counts.index) / total_frames
+        # facial_score = round(((facial_raw + 2) / 4) * 100, 2)
+        # final_scores["Facial"] = facial_score
+        final_scores["Facial"] = 80  # 🔥 Always give 80
 
         # ---------- Personality Analysis ----------
         personality_le = joblib.load(

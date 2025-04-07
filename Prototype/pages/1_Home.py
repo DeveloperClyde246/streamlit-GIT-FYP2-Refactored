@@ -47,13 +47,13 @@ with col1:
     uploaded_file = None
 
     chosen_question = st.session_state.get("chosen_question", "No question selected.")
-    st.write(f"Question: {chosen_question}")
+    # st.write(f"Question: {chosen_question}")
 
     if os.listdir(video_dir):# Loop through video directory
         for video_filename in os.listdir(video_dir):
             video_path = os.path.join(video_dir, video_filename)
             uploaded_file = video_path
-            st.video(uploaded_file)
+        st.video(uploaded_file)
             #st.success(f"Video {video_filename} loaded successfully!")
     if uploaded_file is not None:
         tfile = tempfile.NamedTemporaryFile(delete=False, suffix='.mp4')# Save uploaded file to a temporary location

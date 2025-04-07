@@ -35,7 +35,7 @@ with col1:
     uploaded_file = None
 
     chosen_question = st.session_state.get("chosen_question", "No question selected.")
-    st.write(f"Question: {chosen_question}")
+    # st.write(f"Question: {chosen_question}")
     #video
     if os.listdir(video_dir):
         for video_filename in os.listdir(video_dir):

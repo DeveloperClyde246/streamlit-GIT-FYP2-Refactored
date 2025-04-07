@@ -129,7 +129,6 @@ with col2:
 
 
 
-
     else:
         st.write("Upload a video to view the emotion distribution.")
 

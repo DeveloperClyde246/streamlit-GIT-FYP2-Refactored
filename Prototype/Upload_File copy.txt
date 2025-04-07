@@ -1,5 +1,7 @@
 import streamlit as st
 import os
+import urllib.parse
+import requests
 
 # Function: create folder to save uploaded videos
 video_dir = "uploaded_videos"

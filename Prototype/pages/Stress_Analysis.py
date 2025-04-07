@@ -5,6 +5,20 @@ from services.stress_analysis_function.function_class import convert_video_to_au
 import langcodes
 import tempfile
 
+import subprocess
+
+def force_convert_webm_to_mp4(input_path):
+    output_path = input_path.replace(".mp4", "_converted.mp4").replace(".webm", "_converted.mp4")
+    command = [
+        "ffmpeg", "-y", "-i", input_path,
+        "-c:v", "libx264",
+        "-c:a", "aac",
+        "-strict", "experimental",
+        output_path
+    ]
+    subprocess.run(command, check=True)
+    return output_path
+
 # RUN: python -m streamlit run "C:\Users\Admin\OneDrive\Desktop\speech-score\main-score.py"
 
 st.title('Stress Detection')
@@ -20,14 +34,14 @@ col1, col2 = st.columns([2, 5])
 
 with col1:
     chosen_question = st.session_state.get("chosen_question", "No question selected.")
-    st.write(f"Question: {chosen_question}")
+    # st.write(f"Question: {chosen_question}")
 
     if os.listdir(video_dir):
         for video_filename in os.listdir(video_dir):
             video_path = os.path.join(video_dir, video_filename)
             uploaded_video = video_path
-            st.video(uploaded_video)
-            break  # Process only the first video
+        st.video(uploaded_video)
+
 with col2:
     if uploaded_video is not None:
 
@@ -35,11 +49,22 @@ with col2:
         with st.spinner("Processing your request, please wait..."):
             # Save the uploaded file to a temporary location
             with open(uploaded_video, 'rb') as file:
-                tfile = tempfile.NamedTemporaryFile(delete=False, suffix=".mp4")
-                tfile.write(file.read())  # Write contents to the temp file
+                file_content = file.read()
+
+            tfile = tempfile.NamedTemporaryFile(delete=False, suffix=".mp4")
+            tfile.write(file_content)
+            tfile.close()
 
             # Convert video to audio
-            audio_file = convert_video_to_audio(tfile.name)
+            try:
+                converted_path = force_convert_webm_to_mp4(tfile.name)
+                os.remove(tfile.name)
+            except Exception as e:
+                st.error(f"❌ FFmpeg conversion failed: {e}")
+                st.stop()
+
+            # Now extract audio from the converted file
+            audio_file = convert_video_to_audio(converted_path)
             #st.success("Video has been processed and audio extracted!")
 
             if audio_file:

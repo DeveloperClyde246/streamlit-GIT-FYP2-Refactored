@@ -24,8 +24,8 @@ video_dir = "uploaded_videos"
 uploaded_video = None
 
 # Display question
-chosen_question = st.session_state.get("chosen_question", "No question selected.")
-st.write(f"Question: {chosen_question}")
+# chosen_question = st.session_state.get("chosen_question", "No question selected.")
+# st.write(f"Question: {chosen_question}")
 
 # Load video
 if os.listdir(video_dir):

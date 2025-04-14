@@ -41,7 +41,7 @@ with col1:
         for video_filename in os.listdir(video_dir):
             video_path = os.path.join(video_dir, video_filename)
             uploaded_file = video_path
-            st.video(uploaded_file)
+        st.video(uploaded_file)
             #st.success(f"Video {video_filename} loaded successfully!")
 
 

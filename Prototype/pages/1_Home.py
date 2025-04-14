@@ -82,6 +82,9 @@ with col2:
         st.write("Transcript text Analysis: ")
         if st.button("Stress Detection"):
             st.switch_page("pages/Stress_Analysis.py")
+        st.write("Final Score: ")
+        if st.button("Final Score"):
+            st.switch_page("pages/Final_Score.py")
     with tab2:
         # Convert video to audio
         audio_file = convert_video_to_audio(tfile.name)

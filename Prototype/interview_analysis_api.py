@@ -166,4 +166,5 @@ def analyze_video():
         return jsonify({ "error": str(e) }), 500
 
 if __name__ == "__main__":
-    app.run(port=5001, debug=True)
+    app.run(port=5001, debug=True, use_reloader=False)
+

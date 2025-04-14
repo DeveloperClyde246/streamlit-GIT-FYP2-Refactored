@@ -63,7 +63,7 @@ if video_url:
         except Exception as e:
             st.error(f"FFmpeg conversion failed: {e}")
 
-        if st.button("Start Analysis"):
+        if st.button("Proceed"):
             st.switch_page("pages/1_Home.py")
 
     except Exception as e:
